@@ -1,0 +1,934 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:S100="http://www.iho.int/s100gml/5.0" 
+xmlns:gml="http://www.opengis.net/gml/3.2" xmlns="http://www.iho.int/S412/gml/0.1.4"
+xmlns:clsa="http://reference.niem.gov/niem/specification/code-lists/1.0/code-lists-schema-appinfo/" 
+targetNamespace="http://www.iho.int/S412/gml/0.1.4" elementFormDefault="qualified" version="0.1.4-20250416">
+<!-- ================================================================================================ -->
+<!--  S100 XML/GML Schema for S-412 Marine Weather Warnings (Weather Overlay- Warning Services Only)  -->
+<!-- ================================================================================================ -->
+
+<!-- ================================================================================================
+Draft Copyright, license, and disclaimer
+© Copyright 2022 International Hydrographic Organization (IHO)
+
+License (Draft)
+Certain parts of this document refer to or are based on the standards, documents, schemas, or other material
+of the International Organization for Standardization (ISO), Open Geospatial Consortium (OGC), International
+Hydrographic Organization / Organisation Hydrographique Internationale (IHO/OHI), World Meteorological 
+Organization (WMO), National Weather Service/Ocean Prediction Center (NWS/OPC).
+The ISO material can be obtained from any ISO member and from the Web site of the ISO Central Secretariat
+at www.iso.org.
+The OGC material can be obtained from the OGC Web site at www.opengeospatial.org.
+The IHO material can be obtained from the IHO Web site at www.iho.int or from the International Hydrographic
+Organization Secretariat.
+The WMO material can be obtained from the WMO Web site at www.wmo.int.
+
+Permission to copy and distribute this document is hereby granted provided that this notice is retained
+on all copies, and that IHO & the contributors are credited when the material is redistributed or used in
+part or whole in derivative works.
+Redistributions in binary form must reproduce this notice in the documentation and/or other materials
+provided with the distribution.
+
+Disclaimer
+This work is provided by the copyright holders and contributors "as is" and any express or implied warranties,
+including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose
+are disclaimed. In no event shall the copyright owner or contributors be liable for any direct, indirect,
+incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute
+goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of
+liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way
+out of the use of this software, even if advised of the possibility of such damage.
+
+Document History
+Version 0.1.0 	Feb    2017   Greg Seroka (IMSG for NWS/OPC)    Initial version
+Version 0.1.1 	Feb    2017   Greg Seroka (IMSG for NWS/OPC)    Some corrections for xmllint validation
+Version 0.1.2   Mar 22 2017   Greg Seroka (IMSG for NWS/OPC)    Removed ComplexSea feature
+Version 0.1.2   Sep    2017   Greg Seroka (IMSG for NWS/OPC)    Modified SignificantWave feature
+Version 0.1.3   May    2018   Bob Daniels (IMSG for NWS/OPC)    Reduced to include Warning Services only
+                              Bob Daniels (IMSG for NWS/OPC)    max sustanined wind speed for Trop Cyclone made mutiplicity 0,1
+                                                                 for now b/c is n/a except as text note in forecast XML files 
+                                                                 but should be 1,1.
+Version 0.1.1a  Sep    2019   Bob Daniels (IMSG for NWS/OPC)     Removed FrontType and TemperatureMessage and 
+							         named file S412_v0.1.1a.xsd to make clear its 
+							         development version base on released S412_v0.1.1.xsd
+Version 0.1.1b  Nov    2022   Bob Daniels (IMSG for NWS/OPC)     Starting to update to match schema and new 
+                                                                 warning names 
+                Nov 29 2022   Bob Daniels (IMSG for NWS/OPC)     Replace S412_FeatureType with WeatherWarning - top level 
+                                                                 feature for S-412 
+		Aug  1 2023   Bob Daniels (IMSG for NWS/OPC)     Latest version with windWarningThreshold defined
+                Oct 15 2024   Bob Daniels (IMSG for NWS/OPC)     Starting to update with latest Feature and Attributes
+                Nov 19 2024   Bob Daniels (SAIC for NWS/OPC)     Removed some pre-split attributes, general fixes
+                Dec 04 2024   S. Williamson (Axiom for NWS/OPC)  Updated to match latest UML diagram, moved attributes
+Version 0.1.4   Apr 16 2025   S. Williamson (Axiom for NWS/OPC)  Updated to match latest Concept Definition changes
+===================================================================================================== -->
+
+    <!-- =============================================== -->
+    <!--            Namespace Information                -->
+    <!-- =============================================== -->
+
+    <xs:annotation>
+        <xs:documentation>Application schema for S412 Marine Weather Warnings overlay dataset</xs:documentation>
+    </xs:annotation>
+
+    <xs:import namespace="http://www.iho.int/s100gml/5.0" schemaLocation="s100gmlbase.xsd"/>
+    <xs:import namespace="http://www.opengis.net/gml/3.2" schemaLocation="./S100_gmlProfile.xsd"/>
+    <xs:import namespace="http://www.iho.int/S-100/profile/s100_gmlProfile" schemaLocation="S100_gmlProfileLevels.xsd"/>
+
+    <!-- =============================================== -->
+    <!--                 Common Types                    -->
+    <!-- =============================================== -->
+
+    <xs:simpleType name="ISO639-3">
+	<xs:annotation>
+	    <xs:documentation>stub for ISO 639-3 language codes</xs:documentation>
+	</xs:annotation>
+	<xs:restriction base="xs:string">
+	    <xs:pattern value="\w{3}"/>
+	</xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ISO3166-1">
+	<xs:annotation>
+            <xs:documentation>stub for ISO 3166-1 country codes</xs:documentation>
+	</xs:annotation>
+	<xs:restriction base="xs:string">
+            <xs:pattern value="\w{3}"/>
+	</xs:restriction>
+    </xs:simpleType>
+
+    <!-- ================================================== -->
+    <!--        Spatial Property Convenience Types          -->
+    <!-- ================================================== -->
+
+    <xs:complexType name="GM_Surface">
+	<xs:choice>
+	    <xs:element ref="S100:surfaceProperty"/>
+	</xs:choice>
+    </xs:complexType>
+
+    <!-- ================================================== -->
+    <!--                  Feature Types                     -->
+    <!-- ================================================== -->
+
+    <xs:element name="weatherWarning" type="weatherWarningType" abstract="true" substitutionGroup="gml:AbstractFeature"/>
+    <xs:complexType name="weatherWarningType" abstract="true">
+        <xs:annotation>
+            <xs:documentation>Weather Warning</xs:documentation>
+            <xs:documentation>Definition: A product issued by a national authority when a specific weather scenario or event that threatens people or property meets criteria defined by the WMO (WMO No. 558 and No. 471) or by a national authority where applicable.</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="S100:AbstractFeatureType">
+                <xs:sequence>
+                    <!--  Warning sub-types  -->
+                    <xs:element name="iceAccretionWarning" type="iceAccretionWarningType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="restrictedVisibilityWarning" type="restrictedVisibilityWarningType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="significantWaveHeightWarning" type="significantWaveHeightWarningType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="thunderstormWarning" type="thunderstormWarningType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="windWarning" type="windWarningType" minOccurs="0" maxOccurs="unbounded"/>
+                    <!--  Attributes  -->
+                    <xs:element name="cancellationDate" type="cancellationDate" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="dateTimeRange" type="dateTimeRange" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="issuedDateTime" type="issuedDateTime" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="nextUpdateDateTime" type="nextUpdateDateTime" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="weatherWarningMessage" type="weatherWarningMessage" minOccurs="1" maxOccurs="unbounded"/>
+                    <xs:element name="weatherWarningNumber" type="weatherWarningNumber" minOccurs="1" maxOccurs="1"/>
+                    <!--  Association to DataProvider  -->
+                    <!--  <xs:element name="informationProvidedFor" type="gml:ReferenceType" minOccurs="1" maxOccurs="1"/>  -->
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="windWarning" type="windWarningType" abstract="false" substitutionGroup="WeatherWarningType"/>
+    <xs:complexType name="windWarningType" abstract="false">
+        <xs:annotation>
+            <xs:documentation>Wind Warning</xs:documentation>
+            <xs:documentation>Definition: A product issued by a national authority when high wind speeds pose a hazard or are life-threatening.</xs:documentation>
+            <xs:documentation>Reference: WMO-No. 558, Appendix I.2, Multilingual List of terms used in Weather and Sea Bulletins</xs:documentation>
+            <xs:documentation>Reference: WMO-No. 471, Annex 2.B, Multilingual List of Terms used in Weather and Sea Bulletins</xs:documentation>
+            <xs:documentation>Remarks: </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="weatherWarningType">
+                <xs:sequence>
+                    <xs:element name="beaufortForce" type="beaufortForce" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="windWarningThreshold" type="windWarningThreshold" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="maximumWindSpeed" type="maximumWindSpeed" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="geometry" maxOccurs="unbounded">
+                        <xs:complexType>
+			    <xs:choice>
+			        <xs:element ref="S100:surfaceProperty"/>
+			    </xs:choice>
+			</xs:complexType>
+		    </xs:element> 
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="significantWaveHeightWarning" type="significantWaveHeightWarningType" abstract="false" substitutionGroup="WeatherWarningType"/>
+    <xs:complexType name="significantWaveHeightWarningType" abstract="false">
+        <xs:annotation>
+            <xs:documentation>"Significant Wave Height Warning"</xs:documentation>
+            <xs:documentation>Definition: A product issued by a national authority when sea state conditions pose a hazard or are life-threatening.</xs:documentation>
+            <xs:documentation>Reference: WMO-No. 182, International Meteorological Vocabulary</xs:documentation>
+            <xs:documentation>Remarks: </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="weatherWarningType">
+                <xs:sequence>
+                    <xs:element name="significantWaveHeightWarningThreshold" type="significantWaveHeightWarningThreshold" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="geometry" maxOccurs="unbounded">
+                        <xs:complexType>
+			    <xs:choice>
+			        <xs:element ref="S100:surfaceProperty"/>
+			    </xs:choice>
+			</xs:complexType>
+		    </xs:element> 
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="iceAccretionWarning" type="iceAccretionWarningType" abstract="false" substitutionGroup="WeatherWarningType"/>
+    <xs:complexType name="iceAccretionWarningType" abstract="false">
+        <xs:annotation>
+            <xs:documentation>"Ice Accretion Warning"</xs:documentation>
+            <xs:documentation>Definition: A product issued by a national authority when ice accumulation rates pose a hazard to vessels.</xs:documentation>
+            <xs:documentation>Reference: WMO-No. 471, Annex 2.B, Multilingual List of Terms used in Weather and Sea Bulletins</xs:documentation>
+            <xs:documentation>Reference: WMO-No. WMO-No. 558, Appendix I.2, Multilingual List of terms used in Weather and Sea Bulletins</xs:documentation>
+            <xs:documentation>Remarks: </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="weatherWarningType">
+                <xs:sequence>
+                    <xs:element name="iceAccretionRate" type="iceAccretionRate" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="sourceOfIcing" type="sourceOfIcing" minOccurs="0" maxOccurs="1"/>
+                    <xs:element name="geometry" maxOccurs="unbounded">
+                        <xs:complexType>
+			    <xs:choice>
+			        <xs:element ref="S100:surfaceProperty"/>
+			    </xs:choice>
+			</xs:complexType>
+                    </xs:element> 
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="thunderstormWarning" type="thunderstormWarningType" abstract="false" substitutionGroup="WeatherWarningType"/>
+    <xs:complexType name="thunderstormWarningType" abstract="false">
+        <xs:annotation>
+            <xs:documentation>"Thunderstorm Warning"</xs:documentation>
+            <xs:documentation>Definition: A product issued by a national authority when an area of thunderstorms or squalls poses a hazard. Conditions could include strong winds, locally higher waves, potentially heavy precipitation, hail, and dangerous lightning strikes.</xs:documentation>
+            <xs:documentation>Reference: </xs:documentation>
+            <xs:documentation>Remarks: </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="weatherWarningType">
+                <xs:sequence>
+                    <xs:element name="geometry" maxOccurs="unbounded">
+                        <xs:complexType>
+			    <xs:choice>
+			        <xs:element ref="S100:surfaceProperty"/>
+			    </xs:choice>
+			</xs:complexType>
+		    </xs:element> 
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:element name="restrictedVisibilityWarning" type="restrictedVisibilityWarningType" abstract="false" substitutionGroup="WeatherWarningType"/>
+    <xs:complexType name="restrictedVisibilityWarningType" abstract="false">
+        <xs:annotation>
+            <xs:documentation>"Restricted Visibility Warning"</xs:documentation>
+            <xs:documentation>Definition: A product issued by a national authority when horizontal visibility is degraded to less than 0.5 nautical miles by fog, smoke, dust, haze, heavy precipitation, or any other phenomena.</xs:documentation>
+            <xs:documentation>Reference: WMO-No. 471, Annex 2.B, Multilingual List of Terms used in Weather and Sea Bulletins</xs:documentation>
+            <xs:documentation>Reference: WMO-No.  558, Appendix I.2, Multilingual List of terms used in Weather and Sea Bulletins</xs:documentation>
+            <xs:documentation>Remarks: </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="weatherWarningType">
+                <xs:sequence>
+                    <xs:element name="geometry" maxOccurs="unbounded">
+                        <xs:complexType>
+			    <xs:choice>
+			        <xs:element ref="S100:surfaceProperty"/>
+			    </xs:choice>
+			</xs:complexType>
+		    </xs:element> 
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- ================================================== -->
+    <!--                Information Types                   -->
+    <!-- ================================================== -->
+
+    <xs:element name="dataProvider" type="dataProviderType" substitutionGroup="S100:AbstractInformationType"/> 
+    <xs:complexType name="dataProviderType">
+        <xs:annotation>
+            <xs:documentation>Data Provider</xs:documentation>
+            <xs:documentation>Definition: The national authority providing data in an official capacity.</xs:documentation>
+            <xs:documentation>Remarks: Exactly one instance of this information type per dataset</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="S100:AbstractInformationType"> 
+                <xs:sequence>
+                    <xs:element name="contactInformation" type="contactInformation" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="issuingService" type="issuingService" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="preparationService" type="preparationService" minOccurs="1" maxOccurs="1"/>
+                    <xs:element name="dataProviderInformation" type="gml:ReferenceType" minOccurs="1" maxOccurs="1"/> 
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- ================================================== -->
+    <!--                Complex Attributes                  -->
+    <!-- ================================================== -->
+
+    <xs:complexType name="contactInformation">
+        <xs:annotation>
+            <xs:documentation>Contact Information</xs:documentation>
+            <xs:documentation>Definition: Information about where inquires can be sent.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!-- subattributes -->
+            <xs:element name="mailingAddress" type="mailingAddress" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="telephoneNumber" type="telephoneNumber" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="emailAddress" type="emailAddress" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="agencyName" type="agencyName" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="webAddress" type="webAddress" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="dateTimeRange">
+        <xs:annotation>
+            <xs:documentation>Date Time Range</xs:documentation>
+            <xs:documentation>Definition: The range of time a feature is valid for.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!-- subattributes -->
+            <xs:element name="dateTimeStart" type="dateTimeStart" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="dateTimeEnd" type="dateTimeEnd" minOccurs="1" maxOccurs="1"/>
+            <xs:documentation>Reference: "S-412 WMO Weather Product Specification"</xs:documentation>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="issuingService">
+        <xs:annotation>
+            <xs:documentation>Issuing Service</xs:documentation>
+            <xs:documentation>Definition: The number of the METAREA, name of the Nation, and the National Meteorological and Hydrological Service (NMHS) or National Authority that broadcast the warning.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!-- subattributes -->
+            <xs:element name="countryName" type="countryName" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="issuingServiceName" type="issuingServiceName" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="mETAREAName" type="mETAREAName" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="issuingServiceName">
+        <xs:annotation>
+            <xs:documentation>Issuing Service Name</xs:documentation>
+            <xs:documentation>Definition: The identifier that indicates which organization issued meteorological or oceanographic data.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!-- subattributes -->
+            <xs:element name="languageText" type="languageText" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="languageText">
+        <xs:annotation>
+            <xs:documentation>Language Text</xs:documentation>            
+            <xs:documentation>Definition: A combination of written text and a language indication.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!-- subattributes -->
+            <xs:element name="language" type="language" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="text" type="text"  minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="maximumWindSpeed">
+        <xs:annotation>
+            <xs:documentation>Maximum Wind Speed</xs:documentation>
+            <xs:documentation>Definition: When applied to a warning or forecast polygon, refers to the maximum wind speed or range of wind speeds found within the contour of the polygon.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!-- subattributes -->
+            <xs:element name="languageText" type="languageText" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="preparationService">
+        <xs:annotation>
+            <xs:documentation>Preparation Service</xs:documentation>
+            <xs:documentation>Definition: The name of the Nation and National Meteorological and Hydrological Service (NMHS) or National Authority that prepared the warning and transferred it to the relevant Issuing Service for broadcast if not the same.</xs:documentation>
+            <xs:documentation>Reference: S-412 WMO Weather Product Specification </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!-- subattributes -->
+            <xs:element name="countryName" type="countryName" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="issuingServiceName" type="issuingServiceName"  minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="weatherWarningMessage">
+        <xs:annotation>
+            <xs:documentation>Weather Warning Message</xs:documentation>
+            <xs:documentation>Definition: Text message associated with a weather warning polygon.</xs:documentation>
+            <xs:documentation>Remarks: </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <!-- subattributes -->
+            <xs:element name="languageText" type="languageText" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ================================================== -->
+    <!--                Simple Attributes                   -->
+    <!-- ================================================== -->
+
+    <xs:simpleType name="agencyName">
+        <xs:annotation>
+            <xs:documentation>Agency Name</xs:documentation>
+            <xs:documentation>Definition: The name of an agency, entity or organization.</xs:documentation>
+            <xs:documentation>Reference: S-412 WMO Weather Product Specification</xs:documentation>
+            <xs:documentation>Remarks: Maximum of 300 characters.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="beaufortForce">
+        <xs:annotation>
+	    <xs:documentation>Beaufort Force</xs:documentation>
+            <xs:documentation>Definition: Wind force scale, originally based on the state of the sea, expressed in numbers from 0 to 12, as defined by WMO (WMO 306 Manual on Codes, Volume I.1 - International Codes).</xs:documentation>
+            <xs:documentation>Reference: WMO-No. 182, B0620</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>Light Air</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 1 and 3 knots (Beaufort scale wind force 1).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+           <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>Light Breeze</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 4 and 6 knots (Beaufort scale wind force 2).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation>Gentle Breeze</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 7 and 10 knots (Beaufort scale wind force 3).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation>Moderate Breeze</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 11 and 16 knots (Beaufort scale wind force 4).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+	    <xs:enumeration value="5">
+                <xs:annotation>
+                    <xs:documentation>Fresh Breeze</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 17 and 21 knots (Beaufort scale wind force 5).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+	    <xs:enumeration value="6">
+                <xs:annotation>
+                    <xs:documentation>Strong Breeze </xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 22 and 27 knots (Beaufort scale wind force 6).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+	    <xs:enumeration value="7">
+                <xs:annotation>
+                    <xs:documentation>Near Gale</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 28 and 33 knots (Beaufort scale wind force 7).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+	    <xs:enumeration value="8">
+                <xs:annotation>
+                    <xs:documentation>Gale</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 34 and 40 knots (Beaufort scale wind force 8).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+ 	    <xs:enumeration value="9">
+                <xs:annotation>
+                    <xs:documentation>Strong Gale</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 41 and 47 knots (Beaufort scale wind force 9).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="10">	    
+                <xs:annotation>
+                    <xs:documentation>Storm</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 48 and 55 knots (Beaufort scale wind force 10).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+	    <xs:enumeration value="11">
+                <xs:annotation>
+                    <xs:documentation>Violent Storm</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed between 56 and 63 knots (Beaufort scale wind force 11).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+	    <xs:enumeration value="12">
+                <xs:annotation>
+                    <xs:documentation>Hurricane</xs:documentation>
+                    <xs:documentation>Definition: (1) Term, derived from a Caribbean word, first applied to tropical cyclones of the Caribbean Sea. (2) Wind with a speed of 64 knots or higher (Beaufort scale wind force 12).</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+	    <xs:enumeration value="99">
+                <xs:annotation>
+                    <xs:documentation>Calm</xs:documentation>
+                    <xs:documentation>Definition: Wind with a speed zero or less than 2 knots (Beaufort scale wind force 0). The state of sea when there are no waves.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="cancellationDate">
+        <xs:annotation>
+            <xs:documentation>Definition: Date and time of cancelling a notice or warning.</xs:documentation>
+            <xs:documentation>Reference: "IHO WWNWS-SC"</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:dateTime">
+            <xs:pattern value="[0-9][0-9][0-9][0-9][0-1][0-9][0-3][0-9]T[0-5][0-9][0-5][0-9][0-5][0-9]"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="countryName">  
+        <xs:annotation>
+            <xs:documentation>Country</xs:documentation>
+            <xs:documentation>Definition: The name of a nation.</xs:documentation> 
+            <xs:documentation>Reference: American Heritage Dictionary of the English Language </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="ISO3166-1"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="dateTimeEnd">
+        <xs:annotation>
+            <xs:documentation>Date Time End</xs:documentation>
+            <xs:documentation>Definition: The end of a time range, expressed in Universal Time Coordinated (UTC).</xs:documentation>
+            <xs:documentation>Reference: S-57: IHO Transfer Standard for Digital Hydrographic Data, Appendix A, Chapter 2 (2.219 TIMEND)</xs:documentation>
+            <xs:documentation>Unit: Years, months, days, hours, minutes, seconds</xs:documentation> 
+            <xs:documentation>Resolution: 1 second</xs:documentation>
+            <xs:documentation>Remarks: All times are in UTC (Universal Time Coordinated).</xs:documentation>
+            <xs:documentation>Format: YYYYMMDDTHHMMSS, where Y is year, M is month, D is day, H is hour, M is minute, and S is second</xs:documentation>
+            <xs:documentation>Example: 19850412T183059 denotes 18 hours, 30 minutes, and 59 seconds on 12 April 1985.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:dateTime">
+            <xs:pattern value="[0-9][0-9][0-9][0-9][0-1][0-9][0-3][0-9]T[0-5][0-9][0-5][0-9][0-5][0-9]"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="dateTimeStart">
+        <xs:annotation>
+            <xs:documentation>Date Time Start</xs:documentation>
+            <xs:documentation>Definition: The beginning of a time range, expressed in Universal Time Coordinated (UTC).</xs:documentation>
+            <xs:documentation>Reference: S-57: IHO Transfer Standard for Digital Hydrographic Data, Appendix A, Chapter 2 (2.219 TIMSTA)</xs:documentation>
+            <xs:documentation>Unit: Years, months, days, hours, minutes, seconds</xs:documentation>
+            <xs:documentation>Resolution: 1 second</xs:documentation>
+            <xs:documentation>Remarks: All times are in UTC (Universal Time Coordinated).</xs:documentation>
+            <xs:documentation>Format: YYYYMMDDTHHMMSS, where Y is year, M is month, D is day, H is hour, M is minute, and S is second</xs:documentation>
+            <xs:documentation>Example: 19850412T183059 denotes 18 hours, 30 minutes, and 59 seconds on 12 April 1985.</xs:documentation>
+            <xs:documentation>Remarks: All times are in UTC (Universal Time Coordinated).</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:dateTime">
+            <xs:pattern value="[0-9][0-9][0-9][0-9][0-1][0-9][0-3][0-9]T[0-5][0-9][0-5][0-9][0-5][0-9]"/>
+        </xs:restriction>
+    </xs:simpleType>
+ 
+    <xs:simpleType name="emailAddress">
+        <xs:annotation>
+            <xs:documentation>Email Address</xs:documentation>
+            <xs:documentation>Definition: The email address of an entity.</xs:documentation>
+            <xs:documentation>Reference: IHO Registry, Hydro Domain</xs:documentation>
+            <xs:documentation>Remarks: Maximum of 300 characters.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="iceAccretionRate">
+        <xs:annotation>
+            <xs:documentation>Ice Accretion Rate</xs:documentation>
+            <xs:documentation>Definition: Represents the ice accretion warning that has been exceeded or forecast to be exceeded based on ice accumulation rates.</xs:documentation>
+            <xs:documentation>Reference: WMO-No.558</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="1">
+                <xs:annotation>
+                <xs:documentation>moderateIcing</xs:documentation>
+                    <xs:documentation>Definition: Ice accumulation rates between 0.7 and 2 centimetres per hour are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>severeIcing</xs:documentation>
+                    <xs:documentation>Definition: Ice accumulation rates greater than 2 centimetres per hour are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="issuedDateTime">
+        <xs:annotation>
+            <xs:documentation>Issued Date Time</xs:documentation>
+            <xs:documentation>Definition: The time, expressed in Universal Time Coordinated (UTC) at which an object and its attributes are issued from an agency.</xs:documentation>
+            <xs:documentation>Unit: Years, months, days, hours, minutes, seconds</xs:documentation>
+            <xs:documentation>Resolution: 1 second</xs:documentation>
+            <xs:documentation>Format: YYYYMMDDTHHMMSS, where Y is year, M is month, D is day, H is hour, M is minute, and S is second</xs:documentation>
+            <xs:documentation>Remarks: All times are in UTC (Universal Time Coordinated).</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:dateTime"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="language">
+        <xs:annotation>
+            <xs:documentation>Language</xs:documentation>
+            <xs:documentation>Definition: The method of human communication, either spoken or written, consisting of the use of words in a structured and conventional way.</xs:documentation>
+            <xs:documentation>Reference: IHO Registry, Hydro Domain</xs:documentation>
+            <xs:documentation>Remarks: The language is encoded by a character code following ISO 639-3.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="ISO639-3"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="mailingAddress">
+        <xs:annotation>
+            <xs:documentation>Mailing Address"</xs:documentation>
+            <xs:documentation>Definition: The physical address a parcel may be sent to.</xs:documentation>
+            <xs:documentation>Reference: S-412 WMO Weather Product Specification</xs:documentation>
+            <xs:documentation>Remarks: Maximum of 300 characters.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="mETAREAName">
+        <xs:annotation>
+            <xs:documentation>METAREA Name</xs:documentation>
+            <xs:documentation>Definition: A name referencing a defined geographical area of the ocean used to coordinate the transmission of meteorological information and services to mariners.</xs:documentation>
+            <xs:documentation>Reference: WWMIWS (https://wwmiws.wmo.int/index.php)</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>metarea i</xs:documentation>
+                    <xs:documentation>Definition: METAREA 1.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>metarea ii</xs:documentation>
+                    <xs:documentation>Definition: METAREA 2.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation>metarea iii</xs:documentation>
+                    <xs:documentation>Definition: METAREA 3.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation>metarea iv</xs:documentation>
+                    <xs:documentation>Definition: METAREA 4.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="5">
+                <xs:annotation>
+                    <xs:documentation>metarea v</xs:documentation>
+                    <xs:documentation>Definition: METAREA 5.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="6">
+                <xs:annotation>
+                    <xs:documentation>metarea vi</xs:documentation>
+                    <xs:documentation>Definition: METAREA 6.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="7">
+                <xs:annotation>
+                    <xs:documentation>metarea vii</xs:documentation>
+                    <xs:documentation>Definition: METAREA 7.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="8">
+                <xs:annotation>
+                    <xs:documentation>metarea viii</xs:documentation>
+                    <xs:documentation>Definition: METAREA 8.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="9">
+                <xs:annotation>
+                    <xs:documentation>metarea ix</xs:documentation>
+                    <xs:documentation>Definition: METAREA 9.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="10">
+                <xs:annotation>
+                    <xs:documentation>metarea x</xs:documentation>
+                    <xs:documentation>Definition: METAREA 10.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="11">
+                <xs:annotation>
+                    <xs:documentation>metarea xi</xs:documentation>
+                    <xs:documentation>Definition: METAREA 11.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="12">
+                <xs:annotation>
+                    <xs:documentation>metarea xii</xs:documentation>
+                    <xs:documentation>Definition: METAREA 12.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="13">
+                <xs:annotation>
+                    <xs:documentation>metarea xiii</xs:documentation>
+                    <xs:documentation>Definition: METAREA 13.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="14">
+                <xs:annotation>
+                    <xs:documentation>metarea xiv</xs:documentation>
+                    <xs:documentation>Definition: METAREA 14.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="15">
+                <xs:annotation>
+                    <xs:documentation>metarea xv</xs:documentation>
+                    <xs:documentation>Definition: METAREA 15.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="16">
+                <xs:annotation>
+                    <xs:documentation>metarea xvi</xs:documentation>
+                    <xs:documentation>Definition: METAREA 16.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="17">
+                <xs:annotation>
+                    <xs:documentation>metarea xvii</xs:documentation>
+                    <xs:documentation>Definition: METAREA 17.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="18">
+                <xs:annotation>
+                    <xs:documentation>metarea xviii</xs:documentation>
+                    <xs:documentation>Definition: METAREA 18.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="19">
+                <xs:annotation>
+                    <xs:documentation>metarea xix</xs:documentation>
+                    <xs:documentation>Definition: METAREA 19.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="20">
+                <xs:annotation>
+                    <xs:documentation>metarea xx</xs:documentation>
+                    <xs:documentation>Definition: METAREA 20.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="21">
+                <xs:annotation>
+                    <xs:documentation>metarea xxi</xs:documentation>
+                    <xs:documentation>Definition: METAREA 21.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="nextUpdateDateTime">
+        <xs:annotation>
+            <xs:documentation>Next Update Date Time</xs:documentation>
+            <xs:documentation>Definition: The time, expressed in Universal Time Coordinated (UTC) an object and its attributes are scheduled to be updated.</xs:documentation>
+            <xs:documentation>Reference: NWSI 10-315, 5.4</xs:documentation>
+            <xs:documentation>Format: YYYYMMDDTHHMMSS, where Y is year, M is month, D is day, H is hour, M is minute, and S is second.</xs:documentation>
+            <xs:documentation>Resolution: 1 second.</xs:documentation> 
+            <xs:documentation>Remarks: All times are in UTC (Universal Time Coordinated).</xs:documentation>
+            <xs:documentation>Example: 19850412T183059 denotes 18 hours, 30 minutes, and 59 seconds on 12 April 1985.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:dateTime"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="sourceOfIcing">
+        <xs:annotation>
+            <xs:documentation>Source of Icing</xs:documentation>
+            <xs:documentation>Definition: The type of weather phenomenon causing hazardous ice accretion.</xs:documentation>
+            <xs:documentation>Reference: S-412 WMO Weather Product Specification</xs:documentation>        </xs:annotation> 
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>freezing spray</xs:documentation>
+                    <xs:documentation>Definition: Water droplets transported through air at below freezing temperatures.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>freezing rain</xs:documentation>
+                    <xs:documentation>Definition: Precipitation drops freezing on impact to form a coating of clear ice (glaze) on the ground and on exposed objects.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation>freezing fog</xs:documentation>
+                    <xs:documentation>Definition: Tiny, supercooled liquid water droplets in fog can freeze instantly on exposed surfaces when surface temps are at or below freezing.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation>other icing source</xs:documentation>
+                    <xs:documentation>Definition: Source of icing is unknown or is different from other types of icing sources.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="telephoneNumber">
+        <xs:annotation>
+            <xs:documentation>Telephone Number</xs:documentation>
+            <xs:documentation>Definition: The telephone number of an entity.</xs:documentation>
+            <xs:documentation>Reference: IHO Registry, Hydro Domain</xs:documentation>
+            <xs:documentation>Remarks: Maximum of 300 characters.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base ="xs:string"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="text">
+        <xs:annotation>
+            <xs:documentation>Text</xs:documentation>
+            <xs:documentation>Definition: A non-formatted digital text string.</xs:documentation>
+            <xs:documentation>Remarks: Maximum of 300 characters.</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base ="xs:string"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="significantWaveHeightWarningThreshold">
+        <xs:annotation>
+            <xs:documentation>Significant Wave Height Warning Threshold</xs:documentation>
+            <xs:documentation>Definition: Represents the significant wave height warning that has been exceeded or forecast to be exceeded based on predetermined bins of significant wave height values.</xs:documentation>
+            <xs:documentation>Reference: S-412 WMO Weather Product Specification</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>two and a half to four metres</xs:documentation>
+                    <xs:documentation>Definition: Significant wave heights between 2.5 and 4 metres (8-13 ft) are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>four to six metres</xs:documentation>
+                    <xs:documentation>Definition: Significant wave heights between 4 and 6 metres (13-20 ft) are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation>six to nine metres</xs:documentation>
+                    <xs:documentation>Definition: Significant wave heights between 6 and 9 metres (20-30 ft) are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation>nine to fourteen metres</xs:documentation>
+                    <xs:documentation>Definition: Significant wave heights between 9 and 14 metres (30-45 ft) are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="5">
+                <xs:annotation>
+                    <xs:documentation>greater than fourteen metres</xs:documentation>
+                    <xs:documentation>Definition: Significant wave heights  greater than 14 metres (>45 ft) are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="weatherWarningNumber">
+        <xs:annotation>
+            <xs:documentation>Weather Warning Number</xs:documentation>
+            <xs:documentation>Definition: Identification number given to a specific weather warning.</xs:documentation>
+            <xs:documentation>Reference: S-412 WMO Weather Product Specification</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="webAddress">
+        <xs:annotation>
+            <xs:documentation>Web Address</xs:documentation>
+            <xs:documentation>Definition: A reference to a web resource that specifies its location on a computer network and a mechanism for retrieving it.</xs:documentation>
+            <xs:documentation>Reference: https://en.wikipedia.org/wiki/URL</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"></xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="windWarningThreshold">
+        <xs:annotation>
+            <xs:documentation>Wind Warning Threshold"</xs:documentation>
+            <xs:documentation>Definition: The wind warning that has been exceeded or forecast to be exceeded.</xs:documentation>
+            <xs:documentation>Reference: WMO No.558</xs:documentation>
+            <xs:documentation>Remarks: </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="1">
+                <xs:annotation>
+                    <xs:documentation>Near Gale Force</xs:documentation>
+                    <xs:documentation>Definition: Wind speeds between 28 and 33 knots (Beaufort scale wind force 7) are forecast to occur or are presently occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="2">
+                <xs:annotation>
+                    <xs:documentation>Gale Force</xs:documentation>
+                    <xs:documentation>Definition: Wind speeds between 34 and 47 knots (Beaufort scale wind force 8 and 9) are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="3">
+                <xs:annotation>
+                    <xs:documentation>Storm Force</xs:documentation>
+                    <xs:documentation>Definition: Wind speeds between 48 and 63 knots (Beaufort scale wind forces 10 or 11) are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="4">
+                <xs:annotation>
+                    <xs:documentation>Hurricane Force</xs:documentation>
+                    <xs:documentation>Definition: Sustained wind speeds 64 knots or higher (Beaufort scale wind force 12) are forecast or occurring.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ================================================== -->
+    <!--   Types and Elements for the Dataset Definition    -->
+    <!-- ================================================== -->
+
+    <!-- Reference for DatasetType from test schema: https://schemas.s100dev.net/samples/S100/5_1/Part10b/ -->
+    <xs:complexType name="ThisDatasetType">
+        <xs:complexContent>
+            <xs:extension base="S100:DatasetType">
+                <xs:sequence>
+                    <xs:element name="members">
+                        <xs:complexType>
+                            <xs:complexContent>
+                                <xs:extension base="gml:AbstractFeatureMemberType">
+                                    <xs:sequence>
+                                        <xs:group ref="MemberObjects" minOccurs="0" maxOccurs="unbounded"/>
+                                    </xs:sequence>
+                                </xs:extension>
+                            </xs:complexContent>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+  
+    <xs:element name="Dataset" type="ThisDatasetType"/>
+
+    <!-- ============================================= -->
+    <!--             End of schema file                -->
+    <!-- ============================================= -->
+</xs:schema>
