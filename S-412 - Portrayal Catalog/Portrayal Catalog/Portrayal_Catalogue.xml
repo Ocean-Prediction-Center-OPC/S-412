@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<pc:portrayalCatalog xmlns:pc="http://www.iho.int/S100PortrayalCatalog/5.1" xmlns:xsl="http://www.w3.org/2001/XMLSchema" productId="S-412" version="0.1.1-20240405">
+
+	<pixmaps/>
+
+	<colorProfiles>
+		<colorProfile id="1">
+			<description>
+				<name>Color Profile</name>
+				<description>Color profile with day, dusk, and night color palettes</description>
+				<language>eng</language>
+			</description>
+			<fileName>colorProfile.xml</fileName>
+			<fileType>ColorProfile</fileType>
+			<fileFormat>XML</fileFormat>
+		</colorProfile>
+	</colorProfiles>
+
+	<symbols/>
+	
+	<styleSheets/>
+	
+	<lineStyles/>
+
+	<areaFills/>
+	
+	<fonts/>
+	
+	<viewingGroups>
+		<viewingGroup id="29000">
+			<description>
+				<name>Wind Warnings with unknown warning threshold</name>
+				<description/>
+				<language>eng</language>
+			</description>
+		</viewingGroup>
+		<viewingGroup id="29001">
+			<description>
+				<name>Near Gale Force Warnings</name>
+				<description/>
+				<language>eng</language>
+			</description>
+		</viewingGroup>
+		<viewingGroup id="29002">
+			<description>
+				<name>Gale Force Warnings</name>
+				<description/>
+				<language>eng</language>
+			</description>
+		</viewingGroup>
+		<viewingGroup id="29003">
+			<description>
+				<name>Storm Force Warnings</name>
+				<description/>
+				<language>eng</language>
+			</description>
+		</viewingGroup>
+		<viewingGroup id="29004">
+			<description>
+				<name>Hurricane Force Warnings</name>
+				<description/>
+				<language>eng</language>
+			</description>
+		</viewingGroup>
+	</viewingGroups>
+	
+	<foundationMode/>
+	
+	<viewingGroupLayers>
+		<viewingGroupLayer id="1">
+			<description>
+				<name>Empty (Base)</name>
+				<description>Empty Viewing Group Layer</description>
+				<language>eng</language>
+			</description>
+			<viewingGroup/>
+		</viewingGroupLayer>
+		<viewingGroupLayer id="2">
+			<description>
+				<name>Wind Warnings</name>
+				<description>Viewing group layer for wind warnings</description>
+				<language>eng</language>
+			</description>
+			<viewingGroup>29000</viewingGroup>
+			<viewingGroup>29001</viewingGroup>
+			<viewingGroup>29002</viewingGroup>
+			<viewingGroup>29003</viewingGroup>
+			<viewingGroup>29004</viewingGroup>
+		</viewingGroupLayer>
+		<viewingGroupLayer id="3">
+			<description>
+				<name>Empty (Other)</name>
+				<description>Empty Viewing Group Layer</description>
+				<language>eng</language>
+			</description>
+			<viewingGroup/>
+		</viewingGroupLayer>
+	</viewingGroupLayers>
+
+	<displayModes>
+	  <displayMode id="1">
+		 <description>
+			<name>Display Base</name>
+			<description>Always on display</description>
+			<language>eng</language>
+		 </description>
+		 <viewingGroupLayer>1</viewingGroupLayer>
+	  </displayMode>
+	  <displayMode id="2">
+		 <description>
+			<name>Standard Display</name>
+			<description>ECDIS default display</description>
+			<language>eng</language>
+		 </description>
+		 <viewingGroupLayer>1</viewingGroupLayer>
+		 <viewingGroupLayer>2</viewingGroupLayer>
+	  </displayMode>
+	  <displayMode id="3">
+		 <description>
+			<name>Other Information</name>
+			<description>All other objects in the SENC</description>
+			<language>eng</language>
+		 </description>
+		 <viewingGroupLayer>1</viewingGroupLayer>
+		 <viewingGroupLayer>2</viewingGroupLayer>
+		 <viewingGroupLayer>3</viewingGroupLayer>
+	  </displayMode>
+	</displayModes>
+	
+	<displayPlanes>
+      <displayPlane id="UnderRADAR" order="-1">
+         <description>
+            <name>Under radar</name>
+            <description>Content displayed underneath Radar image</description>
+            <language>eng</language>
+         </description>
+      </displayPlane>
+   </displayPlanes>
+
+	<context>
+		<parameter id="transparency">
+			<description>
+				<name>Transparency</name>
+				<description>Sets the transparency of area fills</description>
+				<language>eng</language>
+			</description>
+			<type>Double</type>
+			<default>0.5</default>
+			<constrain>
+				<enumeration value="0">
+					<label>0%</label>
+				</enumeration>
+				<enumeration value="0.25">
+					<label>25%</label>
+				</enumeration>
+				<enumeration value="0.5">
+					<label>50%</label>
+				</enumeration>
+				<enumeration value="0.75">
+					<label>75%</label>
+				</enumeration>
+			</constrain>
+		</parameter>
+		<parameter id="IgnoreScamin">
+			<description>
+				<name>Ignore scale minimum</name>
+				<description>Features remain visible regardless of display scale</description>
+				<language>eng</language>
+			</description>
+			<type>Boolean</type>
+			<default>false</default>
+		</parameter>
+	</context>
+
+	<rules>
+		<ruleFile id="1">
+		  <description>
+			<name>attributeRules</name>
+			<description>attributeRules</description>
+			<language>eng</language>
+		  </description>
+		  <fileName>attributeRules.xsl</fileName>
+		  <fileType>Rule</fileType>
+		  <fileFormat>XSLT</fileFormat>
+		  <ruleType>SubTemplate</ruleType>
+		</ruleFile>
+		<ruleFile id="2">
+		  <description>
+			<name>main_PaperChart</name>
+			<description>main_PaperChart</description>
+			<language>eng</language>
+		  </description>
+		  <fileName>main_PaperChart.xsl</fileName>
+		  <fileType>Rule</fileType>
+		  <fileFormat>XSLT</fileFormat>
+		  <ruleType>TopLevelTemplate</ruleType>
+		</ruleFile>
+		<ruleFile id="3">
+		  <description>
+			<name>simpleLineStyle</name>
+			<description>simpleLineStyle</description>
+			<language>eng</language>
+		  </description>
+		  <fileName>simpleLineStyle.xsl</fileName>
+		  <fileType>Rule</fileType>
+		  <fileFormat>XSLT</fileFormat>
+		  <ruleType>SubTemplate</ruleType>
+		</ruleFile>
+		<ruleFile id="4">
+		  <description>
+			<name>textStyle</name>
+			<description>textStyle</description>
+			<language>eng</language>
+		  </description>
+		  <fileName>textStyle.xsl</fileName>
+		  <fileType>Rule</fileType>
+		  <fileFormat>XSLT</fileFormat>
+		  <ruleType>SubTemplate</ruleType>
+		</ruleFile>
+		<ruleFile id="5">
+		  <description>
+			<name>DataCoverage_COMMON</name>
+			<description>DataCoverage_COMMON</description>
+			<language>eng</language>
+		  </description>
+		  <fileName>DataCoverage_COMMON.xsl</fileName>
+		  <fileType>Rule</fileType>
+		  <fileFormat>XSLT</fileFormat>
+		  <ruleType>SubTemplate</ruleType>
+		</ruleFile>
+		<ruleFile id="6">
+		  <description>
+			<name>windWarning</name>
+			<description>Rule file for windWarning feature</description>
+			<language>eng</language>
+		  </description>
+		  <fileName>windWarning.xsl</fileName>
+		  <fileType>Rule</fileType>
+		  <fileFormat>XSLT</fileFormat>
+		  <ruleType>SubTemplate</ruleType>
+		</ruleFile>
+  </rules>
+</pc:portrayalCatalog>
