@@ -1,3 +1,5 @@
+This repository has been archived and is no longer maintained. The code is provided for historical reference and may contain unpatched or unknown vulnerabilities. It should not be used in production systems. This helps ensure consistent signaling across the federal ecosystem and reduces confusion when automated tools or external researchers encounter legacy code
+
 This repository contains the S-412 (Marine Weather Warnings) Product Specification draft and related development documentation to facilitate a mechanism for sharing with external developers. Once a more complete product specification exists, the main repository for the S-412 product specification will reside in the WMO (https://github.com/wmo-im/S-41X-PS) and IHO (https://github.com/iho-ohi) github repositories.
 
 
